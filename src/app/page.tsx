@@ -1,7 +1,13 @@
+import Header from '@/components/Header';
+import BillForm from '@/components/BillForm';
+import BillList from '@/components/BillList';
+
 export default function Home() {
   return (
     <main>
-      <h1>Bill Reminder</h1>
+      <Header />
+      <BillForm />
+      <BillList />
     </main>
   );
 }
