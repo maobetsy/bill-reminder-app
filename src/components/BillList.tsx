@@ -5,8 +5,8 @@ export default function BillList({ bills }) {
                 <p>No bills yet.</p>
             ) : (
                 <ul>
-                    {bills.map((bill, index) => (
-                        <li key={index}>{bill.name} - {bill.amount}</li>
+                    {bills.map((bill) => (
+                        <li key={bill.id}>{bill.name} - {bill.amount}</li>
                     ))}
                 </ul>
             )}
