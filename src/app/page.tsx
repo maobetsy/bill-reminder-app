@@ -18,11 +18,16 @@ export default function Home() {
     setBills([...bills, newBill]);
   };
 
+  const totalAmount = bills.reduce((sum, bill) => {
+    return sum + Number(bill.amount);
+   }, 0);
+
   return (
     <main>
       <Header />
       <BillForm addBill={addBill} />
       <BillList bills={bills}/>
+      <p>Total Amount: {totalAmount}</p>
     </main>
   );
 }
