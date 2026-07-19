@@ -6,6 +6,7 @@ export default function BillForm({ addBill }) {
     const [billName, setBillName] = useState("");
     const [amount, setAmount] = useState("");
     const [frequency, setFrequency] = useState("");
+    const [nextDueDate, setNextDueDate] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -14,12 +15,14 @@ export default function BillForm({ addBill }) {
             addBill({ 
                 name: billName, 
                 amount: parseFloat(amount), 
-                frequency: frequency 
+                frequency: frequency,
+                nextDueDate: nextDueDate
             });
 
             setBillName("");
             setAmount("");
             setFrequency("");
+            setNextDueDate("");
         }
     };
 
@@ -36,6 +39,12 @@ export default function BillForm({ addBill }) {
                 placeholder="Amount"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+            />
+            <input
+                type="date"
+                placeholder="Next Due Date"
+                value={nextDueDate}
+                onChange={(e) => setNextDueDate(e.target.value)}
             />
             <select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
                 <option value="">Select frequency</option>

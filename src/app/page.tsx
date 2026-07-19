@@ -6,6 +6,18 @@ import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
 import BillList from "@/components/BillList";
 
+function getDaysRemaining(dueDate) {
+    const today = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return `Overdue by ${Math.abs(diffDays)} days`;
+    if (diffDays === 0) return "Due today";
+
+    return `${diffDays} days left`;
+}
+
 export default function Home() {
   const [bills, setBills] = useState([]);
 
@@ -41,7 +53,7 @@ export default function Home() {
     <main>
       <Header />
       <BillForm addBill={addBill} />
-      <BillList bills={bills} deleteBill={deleteBill} />
+      <BillList bills={bills} deleteBill={deleteBill} getDaysRemaining={getDaysRemaining} />
       <p>Total Amount: {totalAmount}</p>
     </main>
   );
