@@ -1,4 +1,4 @@
-export default function BillList({ bills }) {
+export default function BillList({ bills, deleteBill }) {
     return (
         <div>
             {bills.length === 0 ? (
@@ -6,7 +6,8 @@ export default function BillList({ bills }) {
             ) : (
                 <ul>
                     {bills.map((bill) => (
-                        <li key={bill.id}>{bill.name} - {bill.amount}</li>
+                        <li key={bill.id}>{bill.name} - {bill.amount}
+                        <button onClick={() => deleteBill(bill.id)}>Delete</button></li>
                     ))}
                 </ul>
             )}

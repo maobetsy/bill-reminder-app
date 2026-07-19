@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
@@ -22,11 +22,26 @@ export default function Home() {
     return sum + Number(bill.amount);
    }, 0);
 
+   const deleteBill = (id) => {
+    setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
+  }
+
+  useEffect(() => {
+    const storedBills = localStorage.getItem("bills");
+    if (storedBills) {
+      setBills(JSON.parse(storedBills));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("bills", JSON.stringify(bills));
+  }, [bills]);
+
   return (
     <main>
       <Header />
       <BillForm addBill={addBill} />
-      <BillList bills={bills}/>
+      <BillList bills={bills} deleteBill={deleteBill} />
       <p>Total Amount: {totalAmount}</p>
     </main>
   );
