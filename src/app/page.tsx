@@ -6,16 +6,26 @@ import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
 import BillList from "@/components/BillList";
 
+function pluralise(count, singular, plural = `${singular}s`) {
+  return count === 1 ? singular : plural;
+}
+
 function getDaysRemaining(dueDate) {
-    const today = new Date();
-    const due = new Date(dueDate);
-    const diffTime = due - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // Normalize both dates to midnight to compare just the calendar day
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    if (diffDays < 0) return `Overdue by ${Math.abs(diffDays)} days`;
-    if (diffDays === 0) return "Due today";
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
 
-    return `${diffDays} days left`;
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diffInDays = Math.round((due - today) / msPerDay);
+  
+  if (diffInDays === 0) return "Due today";
+  if (diffInDays > 0) return `${diffInDays} ${pluralise(diffInDays, "day")} left`;
+
+  const overdueDays = Math.abs(diffInDays);
+  return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
 }
 
 export default function Home() {
