@@ -10,7 +10,7 @@ function pluralise(count, singular, plural = `${singular}s`) {
   return count === 1 ? singular : plural;
 }
 
-function getDaysRemaining(dueDate) {
+function getDueDateStatus(dueDate) {
   // Normalize both dates to midnight to compare just the calendar day
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -63,7 +63,7 @@ export default function Home() {
     <main>
       <Header />
       <BillForm addBill={addBill} />
-      <BillList bills={bills} deleteBill={deleteBill} getDaysRemaining={getDaysRemaining} />
+      <BillList bills={bills} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
       <p>Total Amount: {totalAmount}</p>
     </main>
   );

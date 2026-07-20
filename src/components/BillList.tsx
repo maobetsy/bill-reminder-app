@@ -1,4 +1,4 @@
-export default function BillList({ bills, deleteBill, getDaysRemaining }) {
+export default function BillList({ bills, deleteBill, getDueDateStatus }) {
     return (
         <div>
             {bills.length === 0 ? (
@@ -7,7 +7,7 @@ export default function BillList({ bills, deleteBill, getDaysRemaining }) {
                 <ul>
                     {bills.map((bill) => (
                         <li key={bill.id}>{bill.name} - {bill.amount}
-                        <span>({getDaysRemaining(bill.nextDueDate)})</span>
+                        <span>({getDueDateStatus(bill.nextDueDate)})</span>
                         <button onClick={() => deleteBill(bill.id)}>Delete</button>
                         </li>
                     ))}
