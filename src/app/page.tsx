@@ -37,12 +37,41 @@ export default function Home() {
       ...bill
     };
 
-    setBills([...bills, newBill]);
+    setBills((prevBills) => [...prevBills, newBill]);
   };
 
   const totalAmount = bills.reduce((sum, bill) => {
     return sum + Number(bill.amount);
    }, 0);
+
+   const calculateNextDueDate = (date, frequency) => {
+      const d = new Date(date);
+
+      if (frequency === "daily") {
+        d.setDate(d.getDate() + 1);
+      } else if (frequency === "weekly") {
+        d.setDate(d.getDate() + 7);
+      } else if (frequency === "monthly") {
+        d.setMonth(d.getMonth() + 1);
+      } else if (frequency === "yearly") {
+        d.setFullYear(d.getFullYear() + 1);
+      }
+
+      return d.toISOString();
+    };
+
+   const markAsPaid = (bill) => {
+    const nextDueDate = calculateNextDueDate(
+      bill.nextDueDate,
+      bill.frequency
+    );
+
+    setBills((prevBills) =>
+      prevBills.map((b) =>
+        b.id === bill.id ? { ...b, nextDueDate } : b
+      )
+    );
+  }
 
    const deleteBill = (id) => {
     setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
@@ -63,7 +92,7 @@ export default function Home() {
     <main>
       <Header />
       <BillForm addBill={addBill} />
-      <BillList bills={bills} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
+      <BillList bills={bills} onMarkPaid={markAsPaid} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
       <p>Total Amount: {totalAmount}</p>
     </main>
   );
