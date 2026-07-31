@@ -44,20 +44,25 @@ export default function Home() {
     return sum + Number(bill.amount);
    }, 0);
 
+   // TODO:
+   // logic for last day of month, business days etc.
+   // logic for late payments - separate due date for current schedule and calculate upcoming due date based on last payment date
    const calculateNextDueDate = (date, frequency) => {
-      const d = new Date(date);
+      const nextDueDate = new Date(date);
 
-      if (frequency === "daily") {
-        d.setDate(d.getDate() + 1);
-      } else if (frequency === "weekly") {
-        d.setDate(d.getDate() + 7);
+      if (frequency === "weekly") {
+        nextDueDate.setDate(nextDueDate.getDate() + 7);
+      } else if (frequency === "fortnightly") {
+        nextDueDate.setDate(nextDueDate.getDate() + 14);
       } else if (frequency === "monthly") {
-        d.setMonth(d.getMonth() + 1);
-      } else if (frequency === "yearly") {
-        d.setFullYear(d.getFullYear() + 1);
+        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+      } else if (frequency === "quarterly") {
+        nextDueDate.setMonth(nextDueDate.getMonth() + 3);
+      }else if (frequency === "yearly") {
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
       }
 
-      return d.toISOString();
+      return nextDueDate.toISOString();
     };
 
    const markAsPaid = (bill) => {
