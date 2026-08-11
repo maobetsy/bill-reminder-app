@@ -37,12 +37,47 @@ export default function Home() {
       ...bill
     };
 
-    setBills([...bills, newBill]);
+    setBills((prevBills) => [...prevBills, newBill]);
   };
 
   const totalAmount = bills.reduce((sum, bill) => {
     return sum + Number(bill.amount);
    }, 0);
+
+   // TODO:
+   // logic for last day of month, business days etc.
+   // logic for late payments - separate due date for current schedule and calculate upcoming due date based on last payment date
+   const calculateNextDueDate = (date, frequency) => {
+      const nextDueDate = new Date(date);
+
+      if (frequency === "weekly") {
+        nextDueDate.setDate(nextDueDate.getDate() + 7);
+      } else if (frequency === "fortnightly") {
+        nextDueDate.setDate(nextDueDate.getDate() + 14);
+      } else if (frequency === "monthly") {
+        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+      } else if (frequency === "quarterly") {
+        nextDueDate.setMonth(nextDueDate.getMonth() + 3);
+      } else if (frequency === "yearly") {
+        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+      }
+      // any other frequency (including "N/A") falls through and returns the same date      
+
+      return nextDueDate.toISOString();
+    };
+
+   const markAsPaid = (bill) => {
+    const nextDueDate = calculateNextDueDate(
+      bill.nextDueDate,
+      bill.frequency
+    );
+
+    setBills((prevBills) =>
+      prevBills.map((b) =>
+        b.id === bill.id ? { ...b, nextDueDate } : b
+      )
+    );
+  }
 
    const deleteBill = (id) => {
     setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
@@ -63,8 +98,8 @@ export default function Home() {
     <main>
       <Header />
       <BillForm addBill={addBill} />
-      <BillList bills={bills} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
-      <p>Total Amount: {totalAmount}</p>
+      <BillList bills={bills} onMarkPaid={markAsPaid} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
+      <p>Total Amount: ${totalAmount}</p>
     </main>
   );
 }
