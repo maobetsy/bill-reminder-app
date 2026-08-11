@@ -99,7 +99,7 @@ export default function Home() {
       <Header />
       <BillForm addBill={addBill} />
       <BillList bills={bills} onMarkPaid={markAsPaid} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
-      <p>Total Amount: {totalAmount}</p>
+      <p>Total Amount: ${totalAmount}</p>
     </main>
   );
 }
