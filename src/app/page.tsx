@@ -58,9 +58,10 @@ export default function Home() {
         nextDueDate.setMonth(nextDueDate.getMonth() + 1);
       } else if (frequency === "quarterly") {
         nextDueDate.setMonth(nextDueDate.getMonth() + 3);
-      }else if (frequency === "yearly") {
+      } else if (frequency === "yearly") {
         nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
       }
+      // any other frequency (including "N/A") falls through and returns the same date      
 
       return nextDueDate.toISOString();
     };
