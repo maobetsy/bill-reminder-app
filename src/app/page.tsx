@@ -133,11 +133,10 @@ export default function Home() {
   }, [bills]);
 
   return (
-    <main>
+    <main className="p-24">
       <Header />
       <BillForm addBill={addBill} />
-      {/* <BillList bills={orderedBills} onMarkPaid={markAsPaid} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} /> */}
-      <h2>Overdue</h2>
+      <h2 className="text-xl font-semibold p-4 mb-2 bg-red-600 text-white  rounded-lg shadow-md">Overdue</h2>
       <BillList
         bills={groupedBills.overdue}
         onMarkPaid={markAsPaid}
@@ -145,7 +144,7 @@ export default function Home() {
         getDueDateStatus={getDueDateStatus}
       />
 
-      <h2>Due Soon</h2>
+      <h2 className="text-xl font-semibold p-4 mb-2 bg-orange-600 text-white  rounded-lg shadow-md">Due Soon</h2>
       <BillList
         bills={groupedBills.dueSoon}
         onMarkPaid={markAsPaid}
@@ -153,14 +152,13 @@ export default function Home() {
         getDueDateStatus={getDueDateStatus}
       />
 
-      <h2>Upcoming</h2>
+      <h2 className="text-xl font-semibold p-4 mb-2 bg-neutral-600 text-white  rounded-lg shadow-md">Upcoming</h2>
       <BillList
         bills={groupedBills.upcoming}
         onMarkPaid={markAsPaid}
         deleteBill={deleteBill}
         getDueDateStatus={getDueDateStatus}
       />
-      <p>Total Amount: ${totalAmount}</p>
     </main>
   );
 }
