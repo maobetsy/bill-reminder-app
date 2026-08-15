@@ -27,26 +27,31 @@ export default function BillForm({ addBill }) {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form 
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-2 p-4 mb-6 bg-neutral-100 rounded-lg shadow-md">
             <input
                 type="text"
                 placeholder="Bill name"
                 value={billName}
                 onChange={(e) => setBillName(e.target.value)}
+                className="p-2 border rounded-md"
             />
             <input
                 type="number"
                 placeholder="Amount"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                className="p-2 border rounded-md"
             />
             <input
                 type="date"
                 placeholder="Next Due Date"
                 value={nextDueDate}
                 onChange={(e) => setNextDueDate(e.target.value)}
+                className="p-2 border rounded-md"
             />
-            <select value={frequency} onChange={(e) => setFrequency(e.target.value)}>
+            <select value={frequency} onChange={(e) => setFrequency(e.target.value)} className="p-2 border rounded-md">
                 <option value="">Select frequency</option>
                 <option value="weekly">Weekly</option>
                 <option value="fortnightly">Fortnightly</option>
@@ -55,7 +60,9 @@ export default function BillForm({ addBill }) {
                 <option value="yearly">Yearly</option>
                 <option value="yearly">N/A</option>
             </select>
-            <button type="submit">Add Bill</button>
+            <button type="submit" className="p-2 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-700">
+                Add Bill
+            </button>
         </form>
     )
 }
