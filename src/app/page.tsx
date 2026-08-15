@@ -6,17 +6,21 @@ import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
 import BillList from "@/components/BillList";
 
+const normaliseDate = (date) => {
+  const d = new Date(date);
+
+  d.setHours(0, 0, 0, 0);
+
+  return d;
+};
+
 function pluralise(count, singular, plural = `${singular}s`) {
   return count === 1 ? singular : plural;
 }
 
 function getDueDateStatus(dueDate) {
-  // Normalize both dates to midnight to compare just the calendar day
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
+  const today = normaliseDate(new Date());
+  const due = normaliseDate(dueDate);
 
   const msPerDay = 1000 * 60 * 60 * 24;
   const diffInDays = Math.round((due - today) / msPerDay);
@@ -27,6 +31,24 @@ function getDueDateStatus(dueDate) {
   const overdueDays = Math.abs(diffInDays);
   return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
 }
+
+const getBillStatus = (dueDate) => {
+  const today = normaliseDate(new Date());
+  const due = normaliseDate(dueDate);
+
+  const difference =
+    (due - today) / (1000 * 60 * 60 * 24);
+
+  if (difference < 0) {
+    return "overdue";
+  }
+
+  if (difference <= 3) {
+    return "dueSoon";
+  }
+
+  return "upcoming";
+};
 
 export default function Home() {
   const [bills, setBills] = useState([]);
@@ -39,6 +61,22 @@ export default function Home() {
 
     setBills((prevBills) => [...prevBills, newBill]);
   };
+
+  const orderedBills = [...bills].sort(
+    (a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate)
+  );
+
+  const groupedBills = {
+    overdue: [],
+    dueSoon: [],
+    upcoming: [],
+  };
+
+  orderedBills.forEach((bill) => {
+    const status = getBillStatus(bill.nextDueDate);
+
+    groupedBills[status].push(bill);
+  });
 
   const totalAmount = bills.reduce((sum, bill) => {
     return sum + Number(bill.amount);
@@ -98,7 +136,30 @@ export default function Home() {
     <main>
       <Header />
       <BillForm addBill={addBill} />
-      <BillList bills={bills} onMarkPaid={markAsPaid} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} />
+      {/* <BillList bills={orderedBills} onMarkPaid={markAsPaid} deleteBill={deleteBill} getDueDateStatus={getDueDateStatus} /> */}
+      <h2>Overdue</h2>
+      <BillList
+        bills={groupedBills.overdue}
+        onMarkPaid={markAsPaid}
+        deleteBill={deleteBill}
+        getDueDateStatus={getDueDateStatus}
+      />
+
+      <h2>Due Soon</h2>
+      <BillList
+        bills={groupedBills.dueSoon}
+        onMarkPaid={markAsPaid}
+        deleteBill={deleteBill}
+        getDueDateStatus={getDueDateStatus}
+      />
+
+      <h2>Upcoming</h2>
+      <BillList
+        bills={groupedBills.upcoming}
+        onMarkPaid={markAsPaid}
+        deleteBill={deleteBill}
+        getDueDateStatus={getDueDateStatus}
+      />
       <p>Total Amount: ${totalAmount}</p>
     </main>
   );
