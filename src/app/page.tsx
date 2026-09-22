@@ -117,6 +117,16 @@ export default function Home() {
     );
   }
 
+  const [editingId, setEditingId] = useState(null);
+
+  const editBill = (id, updatedFields) => {
+    setBills((prevBills) =>
+      prevBills.map((bill) =>
+        bill.id === id ? { ...bill, ...updatedFields } : bill
+      )
+    );
+  };
+
    const deleteBill = (id) => {
     setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
   }
@@ -140,6 +150,10 @@ export default function Home() {
       <BillList
         bills={groupedBills.overdue}
         onMarkPaid={markAsPaid}
+        editingId={editingId}
+        onStartEdit={setEditingId}
+        onSaveEdit={editBill}
+        onCancelEdit={() => setEditingId(null)}
         deleteBill={deleteBill}
         getDueDateStatus={getDueDateStatus}
       />
@@ -148,6 +162,10 @@ export default function Home() {
       <BillList
         bills={groupedBills.dueSoon}
         onMarkPaid={markAsPaid}
+                editingId={editingId}
+        onStartEdit={setEditingId}
+        onSaveEdit={editBill}
+        onCancelEdit={() => setEditingId(null)}
         deleteBill={deleteBill}
         getDueDateStatus={getDueDateStatus}
       />
@@ -156,6 +174,10 @@ export default function Home() {
       <BillList
         bills={groupedBills.upcoming}
         onMarkPaid={markAsPaid}
+                editingId={editingId}
+        onStartEdit={setEditingId}
+        onSaveEdit={editBill}
+        onCancelEdit={() => setEditingId(null)}
         deleteBill={deleteBill}
         getDueDateStatus={getDueDateStatus}
       />
