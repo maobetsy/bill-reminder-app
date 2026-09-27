@@ -150,6 +150,10 @@ export default function Home() {
     setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
   }
 
+const deletePaymentHistoryEntry = (id) => {
+  setPaymentHistory((prev) => prev.filter((entry) => entry.id !== id));
+};
+
   useEffect(() => {
     const storedBills = localStorage.getItem("bills");
     if (storedBills) {
@@ -235,13 +239,22 @@ export default function Home() {
       </h2>
       <ul>
         {paymentHistory.map((entry) => (
-          <li key={entry.id} className="p-3 border-b">
-            {entry.name} — ${Number(entry.amount).toFixed(2)}
-            {entry.dueDate && (
-              <span className="block text-sm text-neutral-500">
-                This bill was due on {new Date(entry.dueDate).toLocaleDateString("en-AU")}.
-              </span>
-            )}
+          <li key={entry.id} className="p-3 border-b flex items-center justify-between">
+            <div>
+              {entry.name} — ${Number(entry.amount).toFixed(2)}
+              {entry.dueDate && (
+                <span className="block text-sm text-neutral-500">
+                  This bill was due on {new Date(entry.dueDate).toLocaleDateString("en-AU")}.
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => deletePaymentHistoryEntry(entry.id)}
+              className="text-sm text-red-600 hover:text-red-800 ml-4"
+              aria-label={`Delete payment record for ${entry.name}`}
+            >
+              Delete
+            </button>
           </li>
         ))}
       </ul>
