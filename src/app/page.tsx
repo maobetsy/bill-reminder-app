@@ -36,8 +36,10 @@ const getBillStatus = (dueDate) => {
   const today = normaliseDate(new Date());
   const due = normaliseDate(dueDate);
 
-  const difference =
-    (due - today) / (1000 * 60 * 60 * 24);
+  const oneMonthOut = normaliseDate(new Date());
+  oneMonthOut.setMonth(oneMonthOut.getMonth() + 1);
+
+  const difference = (due - today) / (1000 * 60 * 60 * 24);
 
   if (difference < 0) {
     return "overdue";
@@ -47,12 +49,17 @@ const getBillStatus = (dueDate) => {
     return "soon";
   }
 
-  return "upcoming";
+  if (due <= oneMonthOut) {
+    return "upcoming";
+  }
+
+  return "later";
 };
 
 export default function Home() {
   const [bills, setBills] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [showLater, setShowLater] = useState(false);
 
   const addBill = (bill) => {
     const newBill = {
@@ -71,6 +78,7 @@ export default function Home() {
     overdue: [],
     soon: [],
     upcoming: [],
+    later: [],
     paid: [],
   };
 
@@ -82,11 +90,12 @@ export default function Home() {
     groupedBills[status].push(bill);
   });
 
-  const totalsByStatus = {
-    overdue: sumAmounts(groupedBills.overdue),
-    soon: sumAmounts(groupedBills.soon),
-    upcoming: sumAmounts(groupedBills.upcoming),
-  };
+const totalsByStatus = {
+  overdue: sumAmounts(groupedBills.overdue),
+  soon: sumAmounts(groupedBills.soon),
+  upcoming: sumAmounts(groupedBills.upcoming),
+  later: sumAmounts(groupedBills.later),
+};
 
   const calculateNextDueDate = (date, frequency) => {
     const nextDueDate = new Date(date);
@@ -258,6 +267,30 @@ const deletePaymentHistoryEntry = (id) => {
           </li>
         ))}
       </ul>
+
+      <button
+        onClick={() => setShowLater((prev) => !prev)}
+        className="w-full flex items-center justify-between text-xl font-semibold p-4 mt-6 bg-slate-600 text-white rounded-lg shadow-md"
+        aria-expanded={showLater}
+      >
+        <span>Later ({groupedBills.later.length})</span>
+        <span className="text-sm font-normal">
+          ${totalsByStatus.later.toFixed(2)} {showLater ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {showLater && (
+        <BillList
+          bills={groupedBills.later}
+          onMarkPaid={markAsPaid}
+          editingId={editingId}
+          onStartEdit={setEditingId}
+          onSaveEdit={editBill}
+          onCancelEdit={() => setEditingId(null)}
+          deleteBill={deleteBill}
+          getDueDateStatus={getDueDateStatus}
+        />
+      )}
     </main>
   );
 }
