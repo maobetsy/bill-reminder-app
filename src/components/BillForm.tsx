@@ -58,7 +58,7 @@ export default function BillForm({ addBill }) {
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
                 <option value="yearly">Yearly</option>
-                <option value="yearly">N/A</option>
+                <option value="N/A">N/A</option>
             </select>
             <button type="submit" className="p-2 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-700">
                 Add Bill

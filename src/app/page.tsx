@@ -36,86 +36,114 @@ const getBillStatus = (dueDate) => {
   const today = normaliseDate(new Date());
   const due = normaliseDate(dueDate);
 
-  const difference =
-    (due - today) / (1000 * 60 * 60 * 24);
+  const oneMonthOut = normaliseDate(new Date());
+  oneMonthOut.setMonth(oneMonthOut.getMonth() + 1);
+
+  const difference = (due - today) / (1000 * 60 * 60 * 24);
 
   if (difference < 0) {
     return "overdue";
   }
 
   if (difference <= 3) {
-    return "dueSoon";
+    return "soon";
   }
 
-  return "upcoming";
+  if (due <= oneMonthOut) {
+    return "upcoming";
+  }
+
+  return "later";
 };
 
 export default function Home() {
   const [bills, setBills] = useState([]);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [showLater, setShowLater] = useState(false);
 
   const addBill = (bill) => {
     const newBill = {
+      isPaid: false,
+      ...bill,
       id: crypto.randomUUID(),
-      ...bill
     };
 
-    setBills((prevBills) => [...prevBills, newBill]);
-  };
+  setBills((prevBills) => [...prevBills, newBill]);
+};
 
-  const orderedBills = [...bills].sort(
-    (a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate)
-  );
+  const orderedBills = [...bills]
+    .sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
 
   const groupedBills = {
     overdue: [],
-    dueSoon: [],
+    soon: [],
     upcoming: [],
+    later: [],
+    paid: [],
   };
 
-  orderedBills.forEach((bill) => {
-    const status = getBillStatus(bill.nextDueDate);
+  const sumAmounts = (list) =>
+    list.reduce((sum, bill) => sum + Number(bill.amount), 0);
 
+  orderedBills.forEach((bill) => {
+    const status = bill.isPaid ? "paid" : getBillStatus(bill.nextDueDate);
     groupedBills[status].push(bill);
   });
 
-  const totalAmount = bills.reduce((sum, bill) => {
-    return sum + Number(bill.amount);
-   }, 0);
+const totalsByStatus = {
+  overdue: sumAmounts(groupedBills.overdue),
+  soon: sumAmounts(groupedBills.soon),
+  upcoming: sumAmounts(groupedBills.upcoming),
+  later: sumAmounts(groupedBills.later),
+};
 
-   // TODO:
-   // logic for last day of month, business days etc.
-   // logic for late payments - separate due date for current schedule and calculate upcoming due date based on last payment date
-   const calculateNextDueDate = (date, frequency) => {
-      const nextDueDate = new Date(date);
+  const calculateNextDueDate = (date, frequency) => {
+    const nextDueDate = new Date(date);
 
-      if (frequency === "weekly") {
-        nextDueDate.setDate(nextDueDate.getDate() + 7);
-      } else if (frequency === "fortnightly") {
-        nextDueDate.setDate(nextDueDate.getDate() + 14);
-      } else if (frequency === "monthly") {
-        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-      } else if (frequency === "quarterly") {
-        nextDueDate.setMonth(nextDueDate.getMonth() + 3);
-      } else if (frequency === "yearly") {
-        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
-      }
-      // any other frequency (including "N/A") falls through and returns the same date      
+    if (frequency === "weekly") {
+      nextDueDate.setDate(nextDueDate.getDate() + 7);
+    } else if (frequency === "fortnightly") {
+      nextDueDate.setDate(nextDueDate.getDate() + 14);
+    } else if (frequency === "monthly") {
+      nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+    } else if (frequency === "quarterly") {
+      nextDueDate.setMonth(nextDueDate.getMonth() + 3);
+    } else if (frequency === "yearly") {
+      nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+    }
+    // any other frequency (including "N/A") falls through and returns the same date      
 
-      return nextDueDate.toISOString();
+    return nextDueDate.toISOString();
+  };
+
+  const markAsPaid = (bill) => {
+    const isOneOff = bill.frequency === "N/A";
+
+    const historyEntry = {
+      id: crypto.randomUUID(),
+      billId: bill.id,
+      name: bill.name,
+      amount: bill.amount,
+      paidDate: new Date().toISOString(),
+      dueDate: bill.nextDueDate,
     };
-
-   const markAsPaid = (bill) => {
-    const nextDueDate = calculateNextDueDate(
-      bill.nextDueDate,
-      bill.frequency
-    );
+    setPaymentHistory((prev) => [historyEntry, ...prev]);
 
     setBills((prevBills) =>
-      prevBills.map((b) =>
-        b.id === bill.id ? { ...b, nextDueDate } : b
-      )
+      prevBills.map((b) => {
+        if (b.id !== bill.id) return b;
+
+        if (isOneOff) {
+          return { ...b, isPaid: true };
+        }
+
+        return {
+          ...b,
+          nextDueDate: calculateNextDueDate(b.nextDueDate, b.frequency),
+        };
+      })
     );
-  }
+  };
 
   const [editingId, setEditingId] = useState(null);
 
@@ -131,6 +159,10 @@ export default function Home() {
     setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
   }
 
+const deletePaymentHistoryEntry = (id) => {
+  setPaymentHistory((prev) => prev.filter((entry) => entry.id !== id));
+};
+
   useEffect(() => {
     const storedBills = localStorage.getItem("bills");
     if (storedBills) {
@@ -142,11 +174,28 @@ export default function Home() {
     localStorage.setItem("bills", JSON.stringify(bills));
   }, [bills]);
 
+  useEffect(() => {
+    const storedHistory = localStorage.getItem("paymentHistory");
+    if (storedHistory) {
+      setPaymentHistory(JSON.parse(storedHistory));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("paymentHistory", JSON.stringify(paymentHistory));
+  }, [paymentHistory]);  
+
   return (
     <main className="p-24">
       <Header />
       <BillForm addBill={addBill} />
       <h2 className="text-xl font-semibold p-4 mb-2 bg-red-600 text-white  rounded-lg shadow-md">Overdue</h2>
+      <div className="p-4">
+        <p className="text-sm text-neutral-500">Total amount due</p>
+        <p className="text-2xl font-bold text-red-600">
+          ${totalsByStatus.overdue.toFixed(2)}
+        </p>
+      </div>
       <BillList
         bills={groupedBills.overdue}
         onMarkPaid={markAsPaid}
@@ -158,9 +207,15 @@ export default function Home() {
         getDueDateStatus={getDueDateStatus}
       />
 
-      <h2 className="text-xl font-semibold p-4 mb-2 bg-orange-600 text-white  rounded-lg shadow-md">Due Soon</h2>
+      <h2 className="text-xl font-semibold p-4 mb-2 bg-orange-600 text-white  rounded-lg shadow-md">Soon</h2>
+      <div className="p-4">
+        <p className="text-sm text-neutral-500">Total amount due</p>
+        <p className="text-2xl font-bold text-orange-600">
+          ${totalsByStatus.soon.toFixed(2)}
+        </p>
+      </div>
       <BillList
-        bills={groupedBills.dueSoon}
+        bills={groupedBills.soon}
         onMarkPaid={markAsPaid}
                 editingId={editingId}
         onStartEdit={setEditingId}
@@ -171,6 +226,12 @@ export default function Home() {
       />
 
       <h2 className="text-xl font-semibold p-4 mb-2 bg-neutral-600 text-white  rounded-lg shadow-md">Upcoming</h2>
+      <div className="p-4">
+        <p className="text-sm text-neutral-500">Total amount due</p>
+        <p className="text-2xl font-bold text-neutral-600">
+          ${totalsByStatus.upcoming.toFixed(2)}
+        </p>
+      </div>
       <BillList
         bills={groupedBills.upcoming}
         onMarkPaid={markAsPaid}
@@ -181,6 +242,55 @@ export default function Home() {
         deleteBill={deleteBill}
         getDueDateStatus={getDueDateStatus}
       />
+
+      <h2 className="text-xl font-semibold p-4 mb-2 bg-green-600 text-white rounded-lg shadow-md">
+        Paid
+      </h2>
+      <ul>
+        {paymentHistory.map((entry) => (
+          <li key={entry.id} className="p-3 border-b flex items-center justify-between">
+            <div>
+              {entry.name} — ${Number(entry.amount).toFixed(2)}
+              {entry.dueDate && (
+                <span className="block text-sm text-neutral-500">
+                  This bill was due on {new Date(entry.dueDate).toLocaleDateString("en-AU")}.
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => deletePaymentHistoryEntry(entry.id)}
+              className="text-sm text-red-600 hover:text-red-800 ml-4"
+              aria-label={`Delete payment record for ${entry.name}`}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        onClick={() => setShowLater((prev) => !prev)}
+        className="w-full flex items-center justify-between text-xl font-semibold p-4 mt-6 bg-slate-600 text-white rounded-lg shadow-md"
+        aria-expanded={showLater}
+      >
+        <span>Later ({groupedBills.later.length})</span>
+        <span className="text-sm font-normal">
+          ${totalsByStatus.later.toFixed(2)} {showLater ? "▲" : "▼"}
+        </span>
+      </button>
+
+      {showLater && (
+        <BillList
+          bills={groupedBills.later}
+          onMarkPaid={markAsPaid}
+          editingId={editingId}
+          onStartEdit={setEditingId}
+          onSaveEdit={editBill}
+          onCancelEdit={() => setEditingId(null)}
+          deleteBill={deleteBill}
+          getDueDateStatus={getDueDateStatus}
+        />
+      )}
     </main>
   );
 }
