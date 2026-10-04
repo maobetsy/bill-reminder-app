@@ -9,8 +9,8 @@ import { getBillStatus, sumAmounts } from "@/utils/bills";
 import { getDueDateStatus } from "@/utils/format";
 
 import Header from "@/components/Header";
-import BillForm from "@/components/BillForm";
-import BillList from "@/components/BillList";
+import BillForm from "@/features/bills/components/BillForm";
+import BillList from "@/features/bills/components/BillList";
 
 // const normaliseDate = (date: string | Date) => {
 //   const d = new Date(date);
