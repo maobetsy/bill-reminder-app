@@ -2,7 +2,8 @@
 
 import type { Bill, BillStatus, Frequency, PaymentRecord } from "@/types/bill";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
@@ -59,8 +60,12 @@ const getBillStatus = (dueDate: string): Exclude<BillStatus, "paid"> => {
 };
 
 export default function Home() {
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
+  // const [bills, setBills] = useState<Bill[]>([]);
+  // const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
+  const [bills, setBills] = useLocalStorage<Bill[]>("bills", []);
+  const [paymentHistory, setPaymentHistory] = useLocalStorage<PaymentRecord[]>("paymentHistory", []);
+
+
   const [showLater, setShowLater] = useState(false);
 
   const addBill = (bill: Omit<Bill, "id" | "isPaid">) => {
@@ -166,27 +171,27 @@ export default function Home() {
     setPaymentHistory((prev) => prev.filter((entry) => entry.id !== id));
   };
 
-  useEffect(() => {
-    const storedBills = localStorage.getItem("bills");
-    if (storedBills) {
-      setBills(JSON.parse(storedBills) as Bill[]);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const storedBills = localStorage.getItem("bills");
+  //   if (storedBills) {
+  //     setBills(JSON.parse(storedBills) as Bill[]);
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    localStorage.setItem("bills", JSON.stringify(bills));
-  }, [bills]);
+  // useEffect(() => {
+  //   localStorage.setItem("bills", JSON.stringify(bills));
+  // }, [bills]);
 
-  useEffect(() => {
-    const storedHistory = localStorage.getItem("paymentHistory");
-    if (storedHistory) {
-      setPaymentHistory(JSON.parse(storedHistory) as PaymentRecord[]);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const storedHistory = localStorage.getItem("paymentHistory");
+  //   if (storedHistory) {
+  //     setPaymentHistory(JSON.parse(storedHistory) as PaymentRecord[]);
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    localStorage.setItem("paymentHistory", JSON.stringify(paymentHistory));
-  }, [paymentHistory]);  
+  // useEffect(() => {
+  //   localStorage.setItem("paymentHistory", JSON.stringify(paymentHistory));
+  // }, [paymentHistory]);  
 
   return (
     <main className="p-24">
