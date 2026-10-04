@@ -19,7 +19,7 @@ export default function BillForm({ addBill }: BillFormProps) {
     const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         
-        if (billName && amount && frequency) {
+        if (billName && amount && frequency && nextDueDate) {
             addBill({ 
                 name: billName, 
                 amount: parseFloat(amount), 
@@ -44,6 +44,7 @@ export default function BillForm({ addBill }: BillFormProps) {
                 value={billName}
                 onChange={(e) => setBillName(e.target.value)}
                 className="p-2 border rounded-md"
+                required
             />
             <input
                 type="number"
@@ -51,6 +52,7 @@ export default function BillForm({ addBill }: BillFormProps) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="p-2 border rounded-md"
+                required
             />
             <input
                 type="date"
@@ -58,11 +60,13 @@ export default function BillForm({ addBill }: BillFormProps) {
                 value={nextDueDate}
                 onChange={(e) => setNextDueDate(e.target.value)}
                 className="p-2 border rounded-md"
+                required
             />
             <select
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value as Frequency | "")}
                 className="p-2 border rounded-md"
+                required
             >
                 <option value="">Select frequency</option>
                 <option value="weekly">Weekly</option>
