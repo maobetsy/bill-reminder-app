@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type SubmitEvent } from "react";
 
-export default function BillForm({ addBill }) {
+import type { Bill, Frequency } from "@/features/bills/types";
+
+import Button from "@/components/Button";
+
+interface BillFormProps {
+    addBill: (bill: Omit<Bill, "id" | "isPaid">) => void;
+}
+
+export default function BillForm({ addBill }: BillFormProps) {
     const [billName, setBillName] = useState("");
     const [amount, setAmount] = useState("");
-    const [frequency, setFrequency] = useState("");
+    const [frequency, setFrequency] = useState<Frequency | "">("");
     const [nextDueDate, setNextDueDate] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         
         if (billName && amount && frequency) {
@@ -51,7 +59,11 @@ export default function BillForm({ addBill }) {
                 onChange={(e) => setNextDueDate(e.target.value)}
                 className="p-2 border rounded-md"
             />
-            <select value={frequency} onChange={(e) => setFrequency(e.target.value)} className="p-2 border rounded-md">
+            <select
+                value={frequency}
+                onChange={(e) => setFrequency(e.target.value as Frequency | "")}
+                className="p-2 border rounded-md"
+            >
                 <option value="">Select frequency</option>
                 <option value="weekly">Weekly</option>
                 <option value="fortnightly">Fortnightly</option>
@@ -60,9 +72,9 @@ export default function BillForm({ addBill }) {
                 <option value="yearly">Yearly</option>
                 <option value="N/A">N/A</option>
             </select>
-            <button type="submit" className="p-2 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-700">
+            <Button type="submit" variant="accent">
                 Add Bill
-            </button>
+            </Button>
         </form>
     )
 }

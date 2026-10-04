@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import Button from "@/components/Button";
+
 function BillItem({ bill, isEditing, onStartEdit, onSaveEdit, onCancelEdit, onMarkPaid, deleteBill, formatDate, getDueDateStatus }) {
     const [draft, setDraft] = useState(bill);
 
@@ -18,18 +20,12 @@ function BillItem({ bill, isEditing, onStartEdit, onSaveEdit, onCancelEdit, onMa
                     onChange={(e) => setDraft({ ...draft, amount: Number(e.target.value) })}
                 />
                 <div className="mt-2 flex gap-2">
-                    <button
-                        onClick={() => { onSaveEdit(bill.id, draft); onCancelEdit(); }}
-                        className="p-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700"
-                    >
+                    <Button onClick={() => { onSaveEdit(bill.id, draft); onCancelEdit(); }}>
                         Save
-                    </button>
-                    <button
-                        onClick={onCancelEdit}
-                        className="p-2 bg-gray-400 text-white font-semibold rounded-md hover:bg-gray-500"
-                    >
-                        Cancel
-                    </button>
+                    </Button>
+                    <Button variant="neutral" onClick={onCancelEdit}>
+                            Cancel
+                    </Button>
                 </div>
             </li>
         );
@@ -43,15 +39,15 @@ function BillItem({ bill, isEditing, onStartEdit, onSaveEdit, onCancelEdit, onMa
             </span>
 
             <div className="mt-2 flex gap-2">
-                <button onClick={() => onMarkPaid(bill)} className="p-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                <Button variant="success" onClick={() => onMarkPaid(bill)}>
                     Mark Paid
-                </button>
-                <button onClick={() => onStartEdit(bill.id)} className="p-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700">
+                </Button>
+                <Button onClick={() => onStartEdit(bill.id)}>
                     Edit
-                </button>
-                <button onClick={() => deleteBill(bill.id)} className="p-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700">
+                </Button>
+                <Button variant="danger" onClick={() => deleteBill(bill.id)}>
                     Delete
-                </button>
+                </Button>
             </div>
         </li>
     );
