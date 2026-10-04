@@ -4,9 +4,9 @@ import type { Bill, BillStatus, PaymentRecord } from "@/types/bill";
 
 import { useState } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { calculateNextDueDate } from "@/lib/dates";
-import { getBillStatus, sumAmounts } from "@/lib/bills";
-import { getDueDateStatus } from "@/lib/format";
+import { calculateNextDueDate } from "@/utils/dates";
+import { getBillStatus, sumAmounts } from "@/utils/bills";
+import { getDueDateStatus } from "@/utils/format";
 
 import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";

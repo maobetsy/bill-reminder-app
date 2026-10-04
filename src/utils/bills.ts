@@ -1,5 +1,5 @@
 import type { Bill, BillStatus } from "@/types/bill";
-import { normaliseDate } from "@/lib/dates";
+import { normaliseDate } from "@/utils/dates";
 
 export const getBillStatus = (dueDate: string): Exclude<BillStatus, "paid"> => {
   const today = normaliseDate(new Date());
