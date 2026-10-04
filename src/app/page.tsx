@@ -1,63 +1,66 @@
 "use client";
 
-import type { Bill, BillStatus, Frequency, PaymentRecord } from "@/types/bill";
+import type { Bill, BillStatus, PaymentRecord } from "@/types/bill";
 
 import { useState } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { calculateNextDueDate } from "@/lib/dates";
+import { getBillStatus, sumAmounts } from "@/lib/bills";
+import { getDueDateStatus } from "@/lib/format";
 
 import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
 import BillList from "@/components/BillList";
 
-const normaliseDate = (date: string | Date) => {
-  const d = new Date(date);
+// const normaliseDate = (date: string | Date) => {
+//   const d = new Date(date);
 
-  d.setHours(0, 0, 0, 0);
+//   d.setHours(0, 0, 0, 0);
 
-  return d;
-};
+//   return d;
+// };
 
-function pluralise(count: number, singular: string, plural = `${singular}s`) {
-  return count === 1 ? singular : plural;
-}
+// function pluralise(count: number, singular: string, plural = `${singular}s`) {
+//   return count === 1 ? singular : plural;
+// }
 
-function getDueDateStatus(dueDate: string) {
-  const today = normaliseDate(new Date());
-  const due = normaliseDate(dueDate);
+// function getDueDateStatus(dueDate: string) {
+//   const today = normaliseDate(new Date());
+//   const due = normaliseDate(dueDate);
 
-  const msPerDay = 1000 * 60 * 60 * 24;
-  const diffInDays = Math.round((due.getTime() - today.getTime()) / msPerDay);
+//   const msPerDay = 1000 * 60 * 60 * 24;
+//   const diffInDays = Math.round((due.getTime() - today.getTime()) / msPerDay);
   
-  if (diffInDays === 0) return "Due today";
-  if (diffInDays > 0) return `${diffInDays} ${pluralise(diffInDays, "day")} left`;
+//   if (diffInDays === 0) return "Due today";
+//   if (diffInDays > 0) return `${diffInDays} ${pluralise(diffInDays, "day")} left`;
 
-  const overdueDays = Math.abs(diffInDays);
-  return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
-}
+//   const overdueDays = Math.abs(diffInDays);
+//   return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
+// }
 
-const getBillStatus = (dueDate: string): Exclude<BillStatus, "paid"> => {
-  const today = normaliseDate(new Date());
-  const due = normaliseDate(dueDate);
+// const getBillStatus = (dueDate: string): Exclude<BillStatus, "paid"> => {
+//   const today = normaliseDate(new Date());
+//   const due = normaliseDate(dueDate);
 
-  const oneMonthOut = normaliseDate(new Date());
-  oneMonthOut.setMonth(oneMonthOut.getMonth() + 1);
+//   const oneMonthOut = normaliseDate(new Date());
+//   oneMonthOut.setMonth(oneMonthOut.getMonth() + 1);
 
-  const difference = (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+//   const difference = (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
 
-  if (difference < 0) {
-    return "overdue";
-  }
+//   if (difference < 0) {
+//     return "overdue";
+//   }
 
-  if (difference <= 3) {
-    return "soon";
-  }
+//   if (difference <= 3) {
+//     return "soon";
+//   }
 
-  if (due <= oneMonthOut) {
-    return "upcoming";
-  }
+//   if (due <= oneMonthOut) {
+//     return "upcoming";
+//   }
 
-  return "later";
-};
+//   return "later";
+// };
 
 export default function Home() {
   // const [bills, setBills] = useState<Bill[]>([]);
@@ -90,8 +93,8 @@ export default function Home() {
     paid: [],
   };
 
-  const sumAmounts = (list: Bill[]) =>
-    list.reduce((sum, bill) => sum + Number(bill.amount), 0);
+  // const sumAmounts = (list: Bill[]) =>
+  //   list.reduce((sum, bill) => sum + Number(bill.amount), 0);
 
   orderedBills.forEach((bill) => {
     const status = bill.isPaid ? "paid" : getBillStatus(bill.nextDueDate);
@@ -105,24 +108,24 @@ export default function Home() {
     later: sumAmounts(groupedBills.later),
   };
 
-  const calculateNextDueDate = (date: string, frequency: Frequency) => {
-    const nextDueDate = new Date(date);
+  // const calculateNextDueDate = (date: string, frequency: Frequency) => {
+  //   const nextDueDate = new Date(date);
 
-    if (frequency === "weekly") {
-      nextDueDate.setDate(nextDueDate.getDate() + 7);
-    } else if (frequency === "fortnightly") {
-      nextDueDate.setDate(nextDueDate.getDate() + 14);
-    } else if (frequency === "monthly") {
-      nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-    } else if (frequency === "quarterly") {
-      nextDueDate.setMonth(nextDueDate.getMonth() + 3);
-    } else if (frequency === "yearly") {
-      nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
-    }
-    // any other frequency (including "N/A") falls through and returns the same date      
+  //   if (frequency === "weekly") {
+  //     nextDueDate.setDate(nextDueDate.getDate() + 7);
+  //   } else if (frequency === "fortnightly") {
+  //     nextDueDate.setDate(nextDueDate.getDate() + 14);
+  //   } else if (frequency === "monthly") {
+  //     nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+  //   } else if (frequency === "quarterly") {
+  //     nextDueDate.setMonth(nextDueDate.getMonth() + 3);
+  //   } else if (frequency === "yearly") {
+  //     nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+  //   }
+  //   // any other frequency (including "N/A") falls through and returns the same date      
 
-    return nextDueDate.toISOString();
-  };
+  //   return nextDueDate.toISOString();
+  // };
 
   const markAsPaid = (bill: Bill) => {
     const isOneOff = bill.frequency === "N/A";
