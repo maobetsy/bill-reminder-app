@@ -1,12 +1,14 @@
 "use client";
 
+import type { Bill, BillStatus, Frequency, PaymentRecord } from "@/types/bill";
+
 import { useEffect, useState } from "react";
 
 import Header from "@/components/Header";
 import BillForm from "@/components/BillForm";
 import BillList from "@/components/BillList";
 
-const normaliseDate = (date) => {
+const normaliseDate = (date: string | Date) => {
   const d = new Date(date);
 
   d.setHours(0, 0, 0, 0);
@@ -14,16 +16,16 @@ const normaliseDate = (date) => {
   return d;
 };
 
-function pluralise(count, singular, plural = `${singular}s`) {
+function pluralise(count: number, singular: string, plural = `${singular}s`) {
   return count === 1 ? singular : plural;
 }
 
-function getDueDateStatus(dueDate) {
+function getDueDateStatus(dueDate: string) {
   const today = normaliseDate(new Date());
   const due = normaliseDate(dueDate);
 
   const msPerDay = 1000 * 60 * 60 * 24;
-  const diffInDays = Math.round((due - today) / msPerDay);
+  const diffInDays = Math.round((due.getTime() - today.getTime()) / msPerDay);
   
   if (diffInDays === 0) return "Due today";
   if (diffInDays > 0) return `${diffInDays} ${pluralise(diffInDays, "day")} left`;
@@ -32,14 +34,14 @@ function getDueDateStatus(dueDate) {
   return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
 }
 
-const getBillStatus = (dueDate) => {
+const getBillStatus = (dueDate: string): Exclude<BillStatus, "paid"> => {
   const today = normaliseDate(new Date());
   const due = normaliseDate(dueDate);
 
   const oneMonthOut = normaliseDate(new Date());
   oneMonthOut.setMonth(oneMonthOut.getMonth() + 1);
 
-  const difference = (due - today) / (1000 * 60 * 60 * 24);
+  const difference = (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
 
   if (difference < 0) {
     return "overdue";
@@ -57,24 +59,25 @@ const getBillStatus = (dueDate) => {
 };
 
 export default function Home() {
-  const [bills, setBills] = useState([]);
-  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [bills, setBills] = useState<Bill[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
   const [showLater, setShowLater] = useState(false);
 
-  const addBill = (bill) => {
-    const newBill = {
-      isPaid: false,
+  const addBill = (bill: Omit<Bill, "id" | "isPaid">) => {
+    const newBill: Bill = {
       ...bill,
+      isPaid: false,
       id: crypto.randomUUID(),
     };
 
-  setBills((prevBills) => [...prevBills, newBill]);
-};
+    setBills((prevBills) => [...prevBills, newBill]);
+  };
 
-  const orderedBills = [...bills]
-    .sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
+  const orderedBills = [...bills].sort(
+    (a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime()
+  );
 
-  const groupedBills = {
+  const groupedBills: Record<BillStatus, Bill[]> = {
     overdue: [],
     soon: [],
     upcoming: [],
@@ -82,7 +85,7 @@ export default function Home() {
     paid: [],
   };
 
-  const sumAmounts = (list) =>
+  const sumAmounts = (list: Bill[]) =>
     list.reduce((sum, bill) => sum + Number(bill.amount), 0);
 
   orderedBills.forEach((bill) => {
@@ -90,14 +93,14 @@ export default function Home() {
     groupedBills[status].push(bill);
   });
 
-const totalsByStatus = {
-  overdue: sumAmounts(groupedBills.overdue),
-  soon: sumAmounts(groupedBills.soon),
-  upcoming: sumAmounts(groupedBills.upcoming),
-  later: sumAmounts(groupedBills.later),
-};
+  const totalsByStatus = {
+    overdue: sumAmounts(groupedBills.overdue),
+    soon: sumAmounts(groupedBills.soon),
+    upcoming: sumAmounts(groupedBills.upcoming),
+    later: sumAmounts(groupedBills.later),
+  };
 
-  const calculateNextDueDate = (date, frequency) => {
+  const calculateNextDueDate = (date: string, frequency: Frequency) => {
     const nextDueDate = new Date(date);
 
     if (frequency === "weekly") {
@@ -116,10 +119,10 @@ const totalsByStatus = {
     return nextDueDate.toISOString();
   };
 
-  const markAsPaid = (bill) => {
+  const markAsPaid = (bill: Bill) => {
     const isOneOff = bill.frequency === "N/A";
 
-    const historyEntry = {
+    const historyEntry: PaymentRecord = {
       id: crypto.randomUUID(),
       billId: bill.id,
       name: bill.name,
@@ -145,9 +148,9 @@ const totalsByStatus = {
     );
   };
 
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const editBill = (id, updatedFields) => {
+  const editBill = (id: string, updatedFields: Partial<Bill>) => {
     setBills((prevBills) =>
       prevBills.map((bill) =>
         bill.id === id ? { ...bill, ...updatedFields } : bill
@@ -155,18 +158,18 @@ const totalsByStatus = {
     );
   };
 
-   const deleteBill = (id) => {
-    setBills((prevBills) => prevBills.filter(bill => bill.id !== id));
-  }
+  const deleteBill = (id: string) => {
+    setBills((prevBills) => prevBills.filter((bill) => bill.id !== id));
+  };
 
-const deletePaymentHistoryEntry = (id) => {
-  setPaymentHistory((prev) => prev.filter((entry) => entry.id !== id));
-};
+  const deletePaymentHistoryEntry = (id: string) => {
+    setPaymentHistory((prev) => prev.filter((entry) => entry.id !== id));
+  };
 
   useEffect(() => {
     const storedBills = localStorage.getItem("bills");
     if (storedBills) {
-      setBills(JSON.parse(storedBills));
+      setBills(JSON.parse(storedBills) as Bill[]);
     }
   }, []);
 
@@ -177,7 +180,7 @@ const deletePaymentHistoryEntry = (id) => {
   useEffect(() => {
     const storedHistory = localStorage.getItem("paymentHistory");
     if (storedHistory) {
-      setPaymentHistory(JSON.parse(storedHistory));
+      setPaymentHistory(JSON.parse(storedHistory) as PaymentRecord[]);
     }
   }, []);
 
@@ -217,7 +220,7 @@ const deletePaymentHistoryEntry = (id) => {
       <BillList
         bills={groupedBills.soon}
         onMarkPaid={markAsPaid}
-                editingId={editingId}
+        editingId={editingId}
         onStartEdit={setEditingId}
         onSaveEdit={editBill}
         onCancelEdit={() => setEditingId(null)}
@@ -235,7 +238,7 @@ const deletePaymentHistoryEntry = (id) => {
       <BillList
         bills={groupedBills.upcoming}
         onMarkPaid={markAsPaid}
-                editingId={editingId}
+        editingId={editingId}
         onStartEdit={setEditingId}
         onSaveEdit={editBill}
         onCancelEdit={() => setEditingId(null)}
