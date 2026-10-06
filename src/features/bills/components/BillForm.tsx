@@ -2,7 +2,7 @@
 
 import { useState, type SubmitEvent } from "react";
 
-import type { Bill, Frequency } from "@/features/bills/types";
+import type { Bill, Frequency } from "@/types/bill";
 
 import Button from "@/components/Button";
 
