@@ -9,57 +9,20 @@ import { getBillStatus, sumAmounts } from "@/utils/bills";
 
 import Header from "@/components/Header";
 import BillForm from "@/features/bills/components/BillForm";
-import BillList from "@/features/bills/components/BillList";
+import BillSection from "@/features/bills/components/BillSection";
+import PaymentHistory from "@/features/bills/components/PaymentHistory";
+import CollapsibleBillSection from "@/features/bills/components/CollapsibleBillSection";
 
-// const normaliseDate = (date: string | Date) => {
-//   const d = new Date(date);
-
-//   d.setHours(0, 0, 0, 0);
-
-//   return d;
-// };
-
-// function pluralise(count: number, singular: string, plural = `${singular}s`) {
-//   return count === 1 ? singular : plural;
-// }
-
-// function getDueDateStatus(dueDate: string) {
-//   const today = normaliseDate(new Date());
-//   const due = normaliseDate(dueDate);
-
-//   const msPerDay = 1000 * 60 * 60 * 24;
-//   const diffInDays = Math.round((due.getTime() - today.getTime()) / msPerDay);
-  
-//   if (diffInDays === 0) return "Due today";
-//   if (diffInDays > 0) return `${diffInDays} ${pluralise(diffInDays, "day")} left`;
-
-//   const overdueDays = Math.abs(diffInDays);
-//   return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
-// }
-
-// const getBillStatus = (dueDate: string): Exclude<BillStatus, "paid"> => {
-//   const today = normaliseDate(new Date());
-//   const due = normaliseDate(dueDate);
-
-//   const oneMonthOut = normaliseDate(new Date());
-//   oneMonthOut.setMonth(oneMonthOut.getMonth() + 1);
-
-//   const difference = (due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-
-//   if (difference < 0) {
-//     return "overdue";
-//   }
-
-//   if (difference <= 3) {
-//     return "soon";
-//   }
-
-//   if (due <= oneMonthOut) {
-//     return "upcoming";
-//   }
-
-//   return "later";
-// };
+const SECTIONS: {
+  status: "overdue" | "soon" | "upcoming";
+  title: string;
+  headerClass: string;
+  totalClass: string;
+}[] = [
+  { status: "overdue", title: "Overdue", headerClass: "bg-red-600", totalClass: "text-red-600" },
+  { status: "soon", title: "Soon", headerClass: "bg-orange-600", totalClass: "text-orange-600" },
+  { status: "upcoming", title: "Upcoming", headerClass: "bg-neutral-600", totalClass: "text-neutral-600" },
+];
 
 export default function Home() {
   // const [bills, setBills] = useState<Bill[]>([]);
@@ -68,7 +31,7 @@ export default function Home() {
   const [paymentHistory, setPaymentHistory] = useLocalStorage<PaymentRecord[]>("paymentHistory", []);
 
 
-  const [showLater, setShowLater] = useState(false);
+  // const [showLater, setShowLater] = useState(false);
 
   const addBill = (bill: Omit<Bill, "id" | "isPaid">) => {
     const newBill: Bill = {
@@ -92,9 +55,6 @@ export default function Home() {
     paid: [],
   };
 
-  // const sumAmounts = (list: Bill[]) =>
-  //   list.reduce((sum, bill) => sum + Number(bill.amount), 0);
-
   orderedBills.forEach((bill) => {
     const status = bill.isPaid ? "paid" : getBillStatus(bill.nextDueDate);
     groupedBills[status].push(bill);
@@ -106,25 +66,6 @@ export default function Home() {
     upcoming: sumAmounts(groupedBills.upcoming),
     later: sumAmounts(groupedBills.later),
   };
-
-  // const calculateNextDueDate = (date: string, frequency: Frequency) => {
-  //   const nextDueDate = new Date(date);
-
-  //   if (frequency === "weekly") {
-  //     nextDueDate.setDate(nextDueDate.getDate() + 7);
-  //   } else if (frequency === "fortnightly") {
-  //     nextDueDate.setDate(nextDueDate.getDate() + 14);
-  //   } else if (frequency === "monthly") {
-  //     nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-  //   } else if (frequency === "quarterly") {
-  //     nextDueDate.setMonth(nextDueDate.getMonth() + 3);
-  //   } else if (frequency === "yearly") {
-  //     nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
-  //   }
-  //   // any other frequency (including "N/A") falls through and returns the same date      
-
-  //   return nextDueDate.toISOString();
-  // };
 
   const markAsPaid = (bill: Bill) => {
     const isOneOff = bill.frequency === "N/A";
@@ -213,72 +154,25 @@ export default function Home() {
     <main className="p-24">
       <Header />
       <BillForm addBill={addBill} />
-      <h2 className="text-xl font-semibold p-4 mb-2 bg-red-600 text-white  rounded-lg shadow-md">Overdue</h2>
-      <div className="p-4">
-        <p className="text-sm text-neutral-500">Total amount due</p>
-        <p className="text-2xl font-bold text-red-600">
-          ${totalsByStatus.overdue.toFixed(2)}
-        </p>
-      </div>
-      <BillList bills={groupedBills.overdue} {...listProps} />
 
-      <h2 className="text-xl font-semibold p-4 mb-2 bg-orange-600 text-white  rounded-lg shadow-md">Soon</h2>
-      <div className="p-4">
-        <p className="text-sm text-neutral-500">Total amount due</p>
-        <p className="text-2xl font-bold text-orange-600">
-          ${totalsByStatus.soon.toFixed(2)}
-        </p>
-      </div>
-      <BillList bills={groupedBills.soon} {...listProps} />
+      {SECTIONS.map(({ status, ...style }) => (
+        <BillSection
+          key={status}
+          bills={groupedBills[status]}
+          total={totalsByStatus[status]}
+          {...style}
+          {...listProps}
+        />
+      ))}
 
-      <h2 className="text-xl font-semibold p-4 mb-2 bg-neutral-600 text-white  rounded-lg shadow-md">Upcoming</h2>
-      <div className="p-4">
-        <p className="text-sm text-neutral-500">Total amount due</p>
-        <p className="text-2xl font-bold text-neutral-600">
-          ${totalsByStatus.upcoming.toFixed(2)}
-        </p>
-      </div>
-      <BillList bills={groupedBills.upcoming} {...listProps} />
+      <PaymentHistory entries={paymentHistory} onDelete={deletePaymentHistoryEntry} />
 
-      <h2 className="text-xl font-semibold p-4 mb-2 bg-green-600 text-white rounded-lg shadow-md">
-        Paid
-      </h2>
-      <ul>
-        {paymentHistory.map((entry) => (
-          <li key={entry.id} className="p-3 border-b flex items-center justify-between">
-            <div>
-              {entry.name} — ${Number(entry.amount).toFixed(2)}
-              {entry.dueDate && (
-                <span className="block text-sm text-neutral-500">
-                  This bill was due on {new Date(entry.dueDate).toLocaleDateString("en-AU")}.
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => deletePaymentHistoryEntry(entry.id)}
-              className="text-sm text-red-600 hover:text-red-800 ml-4"
-              aria-label={`Delete payment record for ${entry.name}`}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <button
-        onClick={() => setShowLater((prev) => !prev)}
-        className="w-full flex items-center justify-between text-xl font-semibold p-4 mt-6 bg-slate-600 text-white rounded-lg shadow-md"
-        aria-expanded={showLater}
-      >
-        <span>Later ({groupedBills.later.length})</span>
-        <span className="text-sm font-normal">
-          ${totalsByStatus.later.toFixed(2)} {showLater ? "▲" : "▼"}
-        </span>
-      </button>
-
-      {showLater && (
-        <BillList bills={groupedBills.later} {...listProps} />
-      )}
+      <CollapsibleBillSection
+        title="Later"
+        bills={groupedBills.later}
+        total={totalsByStatus.later}
+        {...listProps}
+      />
     </main>
   );
 }
