@@ -10,7 +10,7 @@ interface BillItemProps {
     onSave: (id: string, updatedFields: Partial<Bill>) => void;
     onCancel: () => void;
     onMarkPaid: (bill: Bill) => void;
-    deleteBill: (id: string) => void;
+    onDelete: (id: string) => void;
 }
 
 export default function BillItem({
@@ -20,7 +20,7 @@ export default function BillItem({
     onSave,
     onCancel,
     onMarkPaid,
-    deleteBill,
+    onDelete,
 }: BillItemProps) {
     return (
         <li className="my-2 p-4 border rounded-lg shadow-sm bg-white">
@@ -47,7 +47,7 @@ export default function BillItem({
                         <Button onClick={() => onStartEdit(bill.id)}>
                             Edit
                         </Button>
-                        <Button variant="danger" onClick={() => deleteBill(bill.id)}>
+                        <Button variant="danger" onClick={() => onDelete(bill.id)}>
                             Delete
                         </Button>
                     </div>
