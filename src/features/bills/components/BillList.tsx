@@ -6,8 +6,8 @@ interface BillListProps {
     onMarkPaid: (bill: Bill) => void;
     editingId: string | null;
     onStartEdit: (id: string) => void;
-    onSaveEdit: (id: string, updatedFields: Partial<Bill>) => void;
-    onCancelEdit: () => void;
+    onSave: (id: string, updatedFields: Partial<Bill>) => void;
+    onCancel: () => void;
     deleteBill: (id: string) => void;
     getDueDateStatus: (dueDate: string) => string;
 }
@@ -21,8 +21,8 @@ export default function BillList({
     onMarkPaid,
     editingId,
     onStartEdit,
-    onSaveEdit,
-    onCancelEdit,
+    onSave,
+    onCancel,
     deleteBill,
     getDueDateStatus,
 }: BillListProps) {
@@ -38,8 +38,8 @@ export default function BillList({
                             bill={bill}
                             isEditing={bill.id === editingId}
                             onStartEdit={onStartEdit}
-                            onSaveEdit={onSaveEdit}
-                            onCancelEdit={onCancelEdit}
+                            onSave={onSave}
+                            onCancel={onCancel}
                             onMarkPaid={onMarkPaid}
                             deleteBill={deleteBill}
                             formatDate={formatDate}
