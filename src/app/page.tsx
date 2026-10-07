@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { calculateNextDueDate } from "@/utils/dates";
 import { getBillStatus, sumAmounts } from "@/utils/bills";
-import { getDueDateStatus } from "@/utils/format";
 
 import Header from "@/components/Header";
 import BillForm from "@/features/bills/components/BillForm";
@@ -166,12 +165,26 @@ export default function Home() {
     );
   };
 
+  const saveEdit = (id: string, updatedFields: Partial<Bill>) => {
+    editBill(id, updatedFields);
+    setEditingId(null);
+  };
+
   const deleteBill = (id: string) => {
     setBills((prevBills) => prevBills.filter((bill) => bill.id !== id));
   };
 
   const deletePaymentHistoryEntry = (id: string) => {
     setPaymentHistory((prev) => prev.filter((entry) => entry.id !== id));
+  };
+
+  const listProps = {
+    editingId,
+    onMarkPaid: markAsPaid,
+    onStartEdit: setEditingId,
+    onSave: saveEdit,
+    onCancel: () => setEditingId(null),
+    onDelete: deleteBill,
   };
 
   // useEffect(() => {
@@ -207,16 +220,7 @@ export default function Home() {
           ${totalsByStatus.overdue.toFixed(2)}
         </p>
       </div>
-      <BillList
-        bills={groupedBills.overdue}
-        onMarkPaid={markAsPaid}
-        editingId={editingId}
-        onStartEdit={setEditingId}
-        onSaveEdit={editBill}
-        onCancelEdit={() => setEditingId(null)}
-        deleteBill={deleteBill}
-        getDueDateStatus={getDueDateStatus}
-      />
+      <BillList bills={groupedBills.overdue} {...listProps} />
 
       <h2 className="text-xl font-semibold p-4 mb-2 bg-orange-600 text-white  rounded-lg shadow-md">Soon</h2>
       <div className="p-4">
@@ -225,16 +229,7 @@ export default function Home() {
           ${totalsByStatus.soon.toFixed(2)}
         </p>
       </div>
-      <BillList
-        bills={groupedBills.soon}
-        onMarkPaid={markAsPaid}
-        editingId={editingId}
-        onStartEdit={setEditingId}
-        onSaveEdit={editBill}
-        onCancelEdit={() => setEditingId(null)}
-        deleteBill={deleteBill}
-        getDueDateStatus={getDueDateStatus}
-      />
+      <BillList bills={groupedBills.soon} {...listProps} />
 
       <h2 className="text-xl font-semibold p-4 mb-2 bg-neutral-600 text-white  rounded-lg shadow-md">Upcoming</h2>
       <div className="p-4">
@@ -243,16 +238,7 @@ export default function Home() {
           ${totalsByStatus.upcoming.toFixed(2)}
         </p>
       </div>
-      <BillList
-        bills={groupedBills.upcoming}
-        onMarkPaid={markAsPaid}
-        editingId={editingId}
-        onStartEdit={setEditingId}
-        onSaveEdit={editBill}
-        onCancelEdit={() => setEditingId(null)}
-        deleteBill={deleteBill}
-        getDueDateStatus={getDueDateStatus}
-      />
+      <BillList bills={groupedBills.upcoming} {...listProps} />
 
       <h2 className="text-xl font-semibold p-4 mb-2 bg-green-600 text-white rounded-lg shadow-md">
         Paid
@@ -291,16 +277,7 @@ export default function Home() {
       </button>
 
       {showLater && (
-        <BillList
-          bills={groupedBills.later}
-          onMarkPaid={markAsPaid}
-          editingId={editingId}
-          onStartEdit={setEditingId}
-          onSaveEdit={editBill}
-          onCancelEdit={() => setEditingId(null)}
-          deleteBill={deleteBill}
-          getDueDateStatus={getDueDateStatus}
-        />
+        <BillList bills={groupedBills.later} {...listProps} />
       )}
     </main>
   );

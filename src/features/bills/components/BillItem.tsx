@@ -1,29 +1,26 @@
 import Button from "@/components/Button";
 import BillEditItem from "@/features/bills/components/BillEditItem";
 import type { Bill }  from "@/types/bill";
+import { formatDate, getDueDateStatus } from "@/utils/format";
 
 interface BillItemProps {
     bill: Bill;
     isEditing: boolean;
     onStartEdit: (id: string) => void;
-    onSaveEdit: (id: string, updatedFields: Partial<Bill>) => void;
-    onCancelEdit: () => void;
+    onSave: (id: string, updatedFields: Partial<Bill>) => void;
+    onCancel: () => void;
     onMarkPaid: (bill: Bill) => void;
     deleteBill: (id: string) => void;
-    formatDate: (date: string) => string;
-    getDueDateStatus: (dueDate: string) => string;
 }
 
 export default function BillItem({
     bill,
     isEditing,
     onStartEdit,
-    onSaveEdit,
-    onCancelEdit,
+    onSave,
+    onCancel,
     onMarkPaid,
     deleteBill,
-    formatDate,
-    getDueDateStatus,
 }: BillItemProps) {
     return (
         <li className="my-2 p-4 border rounded-lg shadow-sm bg-white">
@@ -31,10 +28,10 @@ export default function BillItem({
                 <BillEditItem
                     bill={bill}
                     onSave={(updatedBill) => {
-                        onSaveEdit(bill.id, updatedBill);
-                        onCancelEdit();
+                        onSave(bill.id, updatedBill);
+                        onCancel();
                     }}
-                    onCancel={onCancelEdit}
+                    onCancel={onCancel}
                 />
             ) : (
                 <>

@@ -3,28 +3,22 @@ import type { Bill } from "@/types/bill";
 
 interface BillListProps {
     bills: Bill[];
-    onMarkPaid: (bill: Bill) => void;
     editingId: string | null;
+    onMarkPaid: (bill: Bill) => void;
     onStartEdit: (id: string) => void;
-    onSaveEdit: (id: string, updatedFields: Partial<Bill>) => void;
-    onCancelEdit: () => void;
-    deleteBill: (id: string) => void;
-    getDueDateStatus: (dueDate: string) => string;
+    onSave: (id: string, updatedFields: Partial<Bill>) => void;
+    onCancel: () => void;
+    onDelete: (id: string) => void;
 }
-
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-AU");
-};
 
 export default function BillList({
     bills,
-    onMarkPaid,
     editingId,
+    onMarkPaid,
     onStartEdit,
-    onSaveEdit,
-    onCancelEdit,
-    deleteBill,
-    getDueDateStatus,
+    onSave,
+    onCancel,
+    onDelete,
 }: BillListProps) {
     return (
         <div className="py-2 px-4 mb-6 bg-neutral-100 rounded-lg shadow-md">
@@ -38,12 +32,10 @@ export default function BillList({
                             bill={bill}
                             isEditing={bill.id === editingId}
                             onStartEdit={onStartEdit}
-                            onSaveEdit={onSaveEdit}
-                            onCancelEdit={onCancelEdit}
+                            onSave={onSave}
+                            onCancel={onCancel}
                             onMarkPaid={onMarkPaid}
-                            deleteBill={deleteBill}
-                            formatDate={formatDate}
-                            getDueDateStatus={getDueDateStatus}
+                            onDelete={onDelete}
                         />
                     ))}
                 </ul>

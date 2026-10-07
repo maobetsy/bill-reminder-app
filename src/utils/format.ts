@@ -17,3 +17,7 @@ export function getDueDateStatus(dueDate: string) {
   const overdueDays = Math.abs(diffInDays);
   return `Overdue by ${overdueDays} ${pluralise(overdueDays, "day")}`;
 }
+
+export const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString("en-AU");
+};
